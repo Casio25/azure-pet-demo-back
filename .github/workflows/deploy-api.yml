@@ -15,7 +15,7 @@ permissions:
 
 env:
   NODE_VERSION: "20"
-  APP_NAME: "azure-pet-demo-back"     
+  APP_NAME: "azure-pet-demo-back"
 
 jobs:
   build-deploy:
@@ -30,16 +30,21 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Install deps
+      # Устанавливаем все зависимости для сборки
+      - name: Install deps (dev + prod)
         run: npm ci
 
       - name: Build
         run: npm run build
 
-      - name: Prepare artifact
+      # Готовим ПАКЕТ ДЛЯ РАНТАЙМА: только прод-зависимости
+      - name: Install production deps for artifact
+        run: npm ci --omit=dev
+
+      - name: Prepare artifact (dist + node_modules + package.json)
         run: |
           mkdir -p out
-          cp -r dist package.json package-lock.json out/
+          cp -r dist node_modules package.json package-lock.json out/
           cd out && zip -r app.zip .
 
       - name: Azure login (OIDC)
