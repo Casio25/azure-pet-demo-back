@@ -3,6 +3,7 @@ name: Deploy Nest API to Azure App Service (OIDC)
 on:
   push:
     branches: [ main ]
+
     paths:
       - "**/*.ts"
       - "package.json"
@@ -15,7 +16,7 @@ permissions:
 
 env:
   NODE_VERSION: "20"
-  APP_NAME: "azure-pet-demo-back"
+  APP_NAME: "azure-pet-demo-back"  
 
 jobs:
   build-deploy:
@@ -29,23 +30,24 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
 
-      # Устанавливаем все зависимости для сборки
+
       - name: Install deps (dev + prod)
         run: npm ci
 
       - name: Build
         run: npm run build
 
-      # Готовим ПАКЕТ ДЛЯ РАНТАЙМА: только прод-зависимости
-      - name: Install production deps for artifact
-        run: npm ci --omit=dev
+      - name: Install production deps for runtime
+        run: npm ci --omit=dev --audit=false --fund=false
 
-      - name: Prepare artifact (dist + node_modules + package.json)
+      - name: Prepare artifact
         run: |
           mkdir -p out
           cp -r dist node_modules package.json package-lock.json out/
           cd out && zip -r app.zip .
+
 
       - name: Azure login (OIDC)
         uses: azure/login@v2
@@ -53,6 +55,7 @@ jobs:
           client-id: ${{ vars.AZURE_CLIENT_ID }}
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
