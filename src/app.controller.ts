@@ -9,4 +9,8 @@ export class AppController {
   getHello(): string {
     return this.appService.getHello();
   }
+  
+  @Get('ping')
+  ping() { return { ok: true, ts: Date.now() }; }
 }
+
