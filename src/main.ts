@@ -1,15 +1,21 @@
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
-
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: true });
+
+  app.setGlobalPrefix('api');
+
+  app.set('trust proxy', 1);
+
   app.enableCors({
-    origin: [process.env.FRONT_ORIGIN ,
-      "https://jolly-dune-0d2eebb03.1.azurestaticapps.net"
-    ],
+    origin: true,
     credentials: true,
   });
-  const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
-  await app.listen(port);
+
+  const port = parseInt(process.env.PORT || '', 10) || 8080;
+  await app.listen(port, '0.0.0.0');
+  console.log(`Nest is listening on :${port}`);
 }
 bootstrap();
+
