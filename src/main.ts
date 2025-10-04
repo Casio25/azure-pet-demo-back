@@ -12,7 +12,7 @@ async function bootstrap() {
     origin: true,
     credentials: true,
   });
-
+  //testing port
   const port = parseInt(process.env.PORT || '', 10) || 8080;
   await app.listen(port, '0.0.0.0');
   console.log(`Nest is listening on :${port}`);
